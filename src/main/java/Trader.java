@@ -19,7 +19,6 @@ public class Trader<T> {
     private final List<T> wishlist;
     private int money;
 
-
     /**
      * Construct a Trader, giving them the given inventory,
      * wishlist, and money.
@@ -28,8 +27,7 @@ public class Trader<T> {
      * @param wishlist  Objects in this Trader's wishlist
      * @param money     The Trader's money
      */
-    public Trader(List<T> inventory, List<T> wishlist,
-                  int money) {
+    public Trader(List<T> inventory, List<T> wishlist, int money) {
         this.inventory = inventory;
         this.wishlist = wishlist;
         this.money = money;
@@ -39,18 +37,18 @@ public class Trader<T> {
      *       representing the Trader's money. Give the Trader
      *       empty ArrayLists for their inventory and wishlist.
      */
-
-
-
-
+    public Trader(int money) {
+        this.inventory = new ArrayList();
+        this.wishlist = new ArrayList();
+        this.money = money;
+    }
 
     /* TODO: Implement the method addToWishlist that takes an
      *       object of type T and adds it to this Trader's wishlist.
      */
-
-
-
-
+    public void addToWishlist(T item) {
+        this.wishlist.add(item);
+    }
 
     /* TODO: Implement the method getSellingPrice that takes an
      *       object of type T and returns the object's price
@@ -60,9 +58,12 @@ public class Trader<T> {
      *       We will call this in exchangeMoney().
      */
 
-
-
-
+    public int getSellingPrice(T t) {
+        if (t instanceof Tradable) {
+            return ((Tradable) t).getPrice();
+        }
+        return Tradable.MISSING_PRICE;
+    }
 
     /**
      * Exchange money from other to this Trader according to the price of item,
@@ -71,16 +72,16 @@ public class Trader<T> {
      * @return True if the exchange was completed.
      */
     public boolean exchangeMoney(Trader<T> other, T item) {
-        int selling_price = this.getSellingPrice(item);
-        if (selling_price == Tradable.MISSING_PRICE) {
+        int price = this.getSellingPrice(item);
+        if (price == Tradable.MISSING_PRICE) {
             return false;
         }
-
-        if (selling_price <= other.money) {
-            other.money -= selling_price;
-            this.money += selling_price;
+        if (price <= other.money) {
+            other.money -= price;
+            this.money += price;
             return true;
         }
+
         return false;
     }
 
@@ -91,13 +92,13 @@ public class Trader<T> {
      * @return True iff at least one item was sold from this Trader to other
      */
     public boolean sellTo(Trader<T> other) {
-        boolean sold_at_least_one = false;
+        boolean min_one = false;
         List<T> temp = new ArrayList<>();
 
         for (T item : this.inventory) {
             if (other.wishlist.contains(item) && exchangeMoney(other, item)) {
                 temp.add(item);
-                sold_at_least_one = true;
+                min_one = true;
             }
         }
 
@@ -105,7 +106,7 @@ public class Trader<T> {
         other.inventory.addAll(temp);
         other.wishlist.removeAll(temp);
 
-        return sold_at_least_one;
+        return min_one;
     }
 
     /**
@@ -121,16 +122,13 @@ public class Trader<T> {
     @Override
     public String toString() {
         StringBuilder details = new StringBuilder("-- Inventory --\n");
-
         for (T item : this.inventory) {
             details.append(item).append("\n");
         }
-
         details.append("-- Wishlist --\n");
         for (T item : this.wishlist) {
             details.append(item).append("\n");
         }
-
         return details.toString();
     }
 
@@ -141,5 +139,4 @@ public class Trader<T> {
     public List<T> getInventory(){
         return this.inventory;
     }
-
 }
